@@ -1,30 +1,27 @@
-
-const socket = module.exports;
-const io = require('socket.io')()
-socket.setup = (server) => {
-    socket.io = io.listen(server, {
+const io = require('socket.io')();
+export const Socket: any = {};
+export const socketInit = (server) => {
+    Socket.io = io.listen(server, {
         log: true
+    });
+    Socket.io.use(function (socket, next) {
+        console.log(socket.handshake.query, 'socket.handshake.query');
+        if (socket.handshake.query && socket.handshake.query.token) {
+            // Authentiation code should be here
+            next();
+        }
+        else {
+            next(new Error('Authentication error'));
+        }
+    })
+    Socket.io.on('connect', socket => {
+        console.log('Client Connectted');
+        socket.send('Hello!');
+    });
+
+    Socket.io.on('join', socket => {
+        console.log('Client Connectted');
+        socket.send('Hello!');
     });
 }
 
-
-
-// export const io = require('socket.io')(3000);
-
-// io.on('connect', socket => {
-//     // either with send()
-//     socket.send('Hello!');
-
-//     // or with emit() and custom event names
-//     socket.emit('greetings', 'Hey!', { 'ms': 'jane' }, Buffer.from([4, 3, 3, 1]));
-
-//     // handle the event sent with socket.send()
-//     socket.on('message', (data) => {
-//         console.log(data);
-//     });
-
-//     // handle the event sent with socket.emit()
-//     socket.on('salutations', (elem1, elem2, elem3) => {
-//         console.log(elem1, elem2, elem3);
-//     });
-// });
