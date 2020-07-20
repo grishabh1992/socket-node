@@ -9,7 +9,6 @@ export class UerController {
 
     getRecord = async (request: Request, response: Response, next: NextFunction) => {
         const users = await this.userRepository.retrieve({}, {}, {});
-        console.log(users);
         response.send(users);
     }
 
