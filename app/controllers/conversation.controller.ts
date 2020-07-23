@@ -1,5 +1,6 @@
 import { NextFunction, Response, Request } from "express";
 import { ConversationRepository } from "../repositories/conversation.repository";
+import { CumtomResponse } from "../config/response";
 
 export class ConversationController {
     conversationRepository: ConversationRepository;
@@ -8,12 +9,25 @@ export class ConversationController {
     }
 
     getRecord = async (request: Request, response: Response, next: NextFunction) => {
-        await this.conversationRepository.getRecord();
-        response.send('Get Response');
+        try {
+            let condition = {};
+            if (request.params.id) {
+                condition["_id"] = request.params.id;
+            }
+            const conversations = await this.conversationRepository.queryWithPopulation(condition, {}, {}, JSON.parse(request.query.nested as string));
+            response.send(CumtomResponse.success(conversations, 'Conversations fetched'));
+        } catch (error) {
+            throw CumtomResponse.serverError(error, 'Error');
+        }
     }
 
     createRecord = async (request: Request, response: Response, next: NextFunction) => {
-        response.json(request.body);
+        try {
+            const conversation = await this.conversationRepository.create(request.body);
+            response.send(CumtomResponse.success(conversation, 'Conversation created'));
+        } catch (error) {
+            throw CumtomResponse.serverError(error, 'Error');
+        }
     }
 
     updateRecord = async (request: Request, response: Response, next: NextFunction) => {

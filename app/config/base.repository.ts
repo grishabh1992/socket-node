@@ -6,14 +6,11 @@ export class RepositoryBase<T extends mongoose.Document> {
         this._model = schemaModel;
     }
 
-    create(item: T, callback: (error: any, result: any) => void) {
-        this._model.create(item, callback);
+    async create(item: T) {
+        return await this._model.create(item);
     }
 
-    // retrieve(condition: { [key: string]: any }, projection: { [key: string]: any }, option: { [key: string]: any }, callback: (error: any, result: any) => void) {
-    //     this._model.find(condition, projection, option || {}, callback)
-    // }
-    async retrieve(condition: { [key: string]: any }, projection: { [key: string]: any }, option: { [key: string]: any }) {
+    async retrieve(condition: { [key: string]: any }, projection: { [key: string]: any } = {}, option: { [key: string]: any } = {}) {
         return await this._model.find(condition, projection, option).exec();
     }
 
@@ -25,27 +22,33 @@ export class RepositoryBase<T extends mongoose.Document> {
         this._model.updateMany(condition, { $set: item }, option || {}, callback);
     }
 
-    // updateWithoutSet(condition: { [key: string]: any }, item: { [key: string]: any }, option: { [key: string]: any }, callback: (error: any, result: any) => void) {
-    //     this._model.updateMany(condition, item, option || {}, callback);
-    // }
     async updateWithoutSet(condition: { [key: string]: any }, item: { [key: string]: any }, option: { [key: string]: any }) {
         return await this._model.update(condition, item, option).exec();
     }
 
 
-    updateOne(condition: { [key: string]: any }, item: T, option: { [key: string]: any }, callback: (error: any, result: any) => void) {
-        this._model.findOneAndUpdate(condition, { $set: item }, option || {}, callback);
+    async updateOne(condition: { [key: string]: any }, item: T, option: { [key: string]: any }) {
+        return await this._model.findOneAndUpdate(condition, { $set: item }, option || {});
     }
 
-    delete(condition: { [key: string]: any }, callback: (error: any, result: any) => void) {
-        this._model.remove(condition, (err) => callback(err, null));
+    async delete(condition: { [key: string]: any }) {
+        return await this._model.remove(condition);
     }
 
-    findOneAndRemove(condition: { [key: string]: any }, option: { [key: string]: any }, callback: (error: any, result: any) => void) {
-        this._model.findOneAndRemove(condition, option, callback);
+    async findOneAndRemove(condition: { [key: string]: any }, option: { [key: string]: any }) {
+        return await this._model.findOneAndRemove(condition, option);
     }
 
-    count(condition: { [key: string]: any }, option: { [key: string]: any }, callback: (error: any, result: any) => void) {
-        this._model.countDocuments(condition || {}, callback)
+    async count(condition: { [key: string]: any }, option: { [key: string]: any }) {
+        return await this._model.countDocuments(condition || {})
     }
+
+    async queryWithPopulation(condition: { [key: string]: any }, projection: { [key: string]: any } = {}, option: { [key: string]: any } = {}, population: { [key: string]: any } = {}) {
+        const query = this._model.find(condition, projection, option);
+        if (population.members) {
+            query.populate('members')
+        }
+        return await query.exec();
+    }
+
 }
