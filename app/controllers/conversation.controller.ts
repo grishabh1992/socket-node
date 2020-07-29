@@ -10,11 +10,13 @@ export class ConversationController {
 
     getRecord = async (request: Request, response: Response, next: NextFunction) => {
         try {
-            let condition = {};
+            let condition = {
+                // "members" : { $in : [req.user._id] }
+            };
             if (request.params.id) {
                 condition["_id"] = request.params.id;
             }
-            const conversations = await this.conversationRepository.queryWithPopulation(condition, {}, {}, JSON.parse(request.query.nested as string));
+            const conversations = await this.conversationRepository.queryWithPopulation(condition, {}, {}, JSON.parse(request.query.ref as string));
             response.send(CumtomResponse.success(conversations, 'Conversations fetched'));
         } catch (error) {
             throw CumtomResponse.serverError(error, 'Error');

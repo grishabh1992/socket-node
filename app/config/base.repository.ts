@@ -1,4 +1,9 @@
 import mongoose = require('mongoose');
+
+const populationMapper = {
+    members : 'members',
+    sender : 'sender'
+}
 export class RepositoryBase<T extends mongoose.Document> {
     private _model: mongoose.Model<mongoose.Document>;
 
@@ -27,8 +32,8 @@ export class RepositoryBase<T extends mongoose.Document> {
     }
 
 
-    async updateOne(condition: { [key: string]: any }, item: T, option: { [key: string]: any }) {
-        return await this._model.findOneAndUpdate(condition, { $set: item }, option || {});
+    async updateOne(condition: { [key: string]: any }, item: T, option: { [key: string]: any } = {}) {
+        return await this._model.findOneAndUpdate(condition, { $set: item }, option).exec();
     }
 
     async delete(condition: { [key: string]: any }) {
@@ -43,11 +48,11 @@ export class RepositoryBase<T extends mongoose.Document> {
         return await this._model.countDocuments(condition || {})
     }
 
-    async queryWithPopulation(condition: { [key: string]: any }, projection: { [key: string]: any } = {}, option: { [key: string]: any } = {}, population: { [key: string]: any } = {}) {
-        const query = this._model.find(condition, projection, option);
-        if (population.members) {
-            query.populate('members')
-        }
+    async queryWithPopulation(condition: { [key: string]: any }, projection: { [key: string]: any } = {}, option: { [key: string]: any } = {}, population: string[] = []) {
+        let query = this._model.find(condition, projection, option);
+        population.forEach(element => {
+            query = query.populate(populationMapper[element])
+        });        
         return await query.exec();
     }
 

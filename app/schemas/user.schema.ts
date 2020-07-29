@@ -11,7 +11,10 @@ class UserSchema {
                 type: String,
                 required: true,
                 unique: true
-            }
+            },
+            profile: {
+                type: String
+            },
         });
         return schema;
     }

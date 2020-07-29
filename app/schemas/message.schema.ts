@@ -11,7 +11,7 @@ class MessageSchema {
                 type: Date,
                 default: Date.now
             },
-            conversationId: {
+            conversation: {
                 type: Mongoose.Schema.Types.ObjectId,
                 ref: 'Conversations'
             },

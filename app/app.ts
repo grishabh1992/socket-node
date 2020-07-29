@@ -17,6 +17,7 @@ class App {
     this.express.use(bodyParser.json());
     this.express.use(new AppRoutes().routes);
     this.express.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+      console.log(err);
       if (err.code) {
         res.status(err.code).json({
           data: err.data,

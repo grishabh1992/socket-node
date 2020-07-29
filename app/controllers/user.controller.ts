@@ -20,8 +20,8 @@ export class UerController {
 
     joinMe = async (request: Request, response: Response, next: NextFunction) => {
         try {
-            const user = await this.userRepository.updateWithoutSet({ username: request.body.username }, request.body, { upsert: true });
-            response.send(CumtomResponse.success(request.body, 'You joined'));
+            const user = await this.userRepository.updateOne({ username: request.body.username }, request.body, { upsert: true, new : true });
+            response.send(CumtomResponse.success(user, 'You joined'));
         } catch (error) {
             throw CumtomResponse.serverError(error, 'Error');
         }
