@@ -1,8 +1,8 @@
 import mongoose = require('mongoose');
 
 const populationMapper = {
-    members : 'members',
-    sender : 'sender'
+    members: 'members',
+    sender: 'sender'
 }
 export class RepositoryBase<T extends mongoose.Document> {
     private _model: mongoose.Model<mongoose.Document>;
@@ -52,7 +52,13 @@ export class RepositoryBase<T extends mongoose.Document> {
         let query = this._model.find(condition, projection, option);
         population.forEach(element => {
             query = query.populate(populationMapper[element])
-        });        
+        });
+        return await query.exec();
+    }
+
+
+    async aggregate(pipeline: any[] = []) {
+        let query = this._model.aggregate(pipeline);
         return await query.exec();
     }
 
