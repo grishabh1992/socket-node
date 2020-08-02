@@ -9,7 +9,7 @@ export class MessageRoutes {
         this.controller = new MessageController();
     }
     get routes() {
-        this.router.get('/', asyncHandler(this.controller.getRecord));
+        this.router.get('/:conversationId', asyncHandler(this.controller.getRecord));
         this.router.post('/', asyncHandler(this.controller.createRecord));
         return this.router;
     }

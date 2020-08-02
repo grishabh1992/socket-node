@@ -12,6 +12,7 @@ export class MessageController {
         try {
             let condition = {};
             const aggregatePipeline = [
+                { $match: request.params.conversationId ? { conversation: request.params.conversationId } : {} },
                 { $group: { _id: "$conversation", messages: { $push: "$$ROOT" } } },
                 {
                     $lookup: {
