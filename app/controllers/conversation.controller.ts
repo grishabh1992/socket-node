@@ -25,6 +25,8 @@ export class ConversationController {
 
     createRecord = async (request: Request, response: Response, next: NextFunction) => {
         try {
+            let conversationBody = request.body;
+            conversationBody.members.push(request['user']._id);
             const conversation = await this.conversationRepository.create(request.body);
             response.send(CumtomResponse.success(conversation, 'Conversation created'));
         } catch (error) {

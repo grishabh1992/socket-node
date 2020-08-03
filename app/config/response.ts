@@ -3,7 +3,8 @@ export const SUCCESS = {
 }
 
 export const CLIENT_ERROR = {
-    '400': 400
+    '400': 400,
+    '401': 401
 }
 
 export const SERVER_ERROR = {
@@ -31,6 +32,13 @@ export class CumtomResponse {
             code: SERVER_ERROR[500],
             message: message,
             data: data
+        };
+    }
+
+    static unAuthorised = (message: string = '') => {
+        return {
+            code: CLIENT_ERROR[401],
+            message: message
         };
     }
 }
