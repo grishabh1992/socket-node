@@ -37,6 +37,10 @@ export class Socket {
                 socket.join(room.roomName);
                 io.to(room.roomName).emit('New User Connected...');
             });
+
+            socket.on('message', (messageObject : any) => {
+                io.to(messageObject.conversation).emit('New User Connected...');
+            });
         });
     }
 }

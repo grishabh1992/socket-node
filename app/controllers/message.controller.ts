@@ -1,16 +1,18 @@
 import { NextFunction, Response, Request } from "express";
 import { CumtomResponse } from "../config/response";
 import { MessageRepository } from "../repositories/message.repository";
+import { ConversationRepository } from "../repositories/conversation.repository";
 
 export class MessageController {
     messageRepository: MessageRepository;
+    conversationRepository : ConversationRepository;
     constructor() {
         this.messageRepository = new MessageRepository();
+        this.conversationRepository = new ConversationRepository()
     }
 
     getRecord = async (request: Request, response: Response, next: NextFunction) => {
         try {
-            let condition = {};
             const aggregatePipeline = [
                 { $match: request.params.conversationId ? { conversation: request.params.conversationId } : {} },
                 { $group: { _id: "$conversation", messages: { $push: "$$ROOT" } } },
@@ -33,7 +35,14 @@ export class MessageController {
                 { $replaceRoot: { newRoot: { $mergeObjects: [{ $arrayElemAt: ["$conversation", 0] }, "$$ROOT"] } } },
                 { $project: { conversation: 0, "messages.members": 0, "messages.conversation": 0 } }
             ];
-            const conversationMessages = await this.messageRepository.aggregate(aggregatePipeline);
+            let conversationMessages = await this.messageRepository.aggregate(aggregatePipeline);
+            if(conversationMessages  && Array.isArray(conversationMessages)){
+                const condition = {};
+                if (request.params.conversationId) {
+                    condition["_id"] = request.params.conversationId;
+                }
+                conversationMessages = await this.conversationRepository.queryWithPopulation(condition, {}, {}, ['members']);
+            }
             response.send(CumtomResponse.success(conversationMessages, 'Conversations Messages fetched'));
         } catch (error) {
             throw CumtomResponse.serverError(error, 'Error');
