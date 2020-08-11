@@ -37,7 +37,6 @@ export class Socket {
             console.log('Client Connectted');
 
             socket.on('join', room => {
-                console.log('Client join', room);
                 socket.join(room.roomName);
                 io.to(room.roomName).emit('New User Connected...');
             });
