@@ -16,14 +16,6 @@ export class AuthUtil {
             if (!token) {
                 throw CumtomResponse.unAuthorised('Token is invalid.');
             };
-            // jwt.verify(token, AppConfiguration.SECRET, (err, decodedToken) => {
-            //     if (err && (err.name == 'TokenExpiredError')) {
-            //         throw CumtomResponse.unAuthorised('Token is expired');
-            //     } else if (err) {
-            //         throw CumtomResponse.unAuthorised('Token is invalid.');
-            //     };
-            //     return { ...decodedToken };
-            // });
             return jwt.verify(token, AppConfiguration.SECRET);
         }
         catch (err) {

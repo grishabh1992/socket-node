@@ -6,7 +6,7 @@ export interface MessageModel extends mongoose.Document {
     sender?: UserModel | string;
     messageText?: string;
     createdAt?: Date;
-    conversationId?: ConversationModel | string;
+    conversation?: ConversationModel | string;
     members?: UserModel[] | string[];
     _id?: string;
 }

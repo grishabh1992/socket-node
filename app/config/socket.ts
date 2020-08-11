@@ -1,11 +1,15 @@
 import { AuthUtil } from "../utils/auth.util";
+import { MessageRepository } from "../repositories/message.repository";
+import { MessageModel } from "../models/message.model";
 
 const io = require('socket.io')();
 export const SocketConf: any = {};
 export class Socket {
     private auth: AuthUtil;
+    private messageRepository : MessageRepository;
     constructor() {
         this.auth = new AuthUtil();
+        this.messageRepository = new MessageRepository();
     }
     init(server) {
         SocketConf.io = io.listen(server, {
@@ -38,8 +42,9 @@ export class Socket {
                 io.to(room.roomName).emit('New User Connected...');
             });
 
-            socket.on('message', (messageObject : any) => {
-                io.to(messageObject.conversation).emit('New User Connected...');
+            socket.on('message', async (messageObject : MessageModel) => {
+                const message = await this.messageRepository.create(messageObject);
+                io.to(messageObject.conversation!).emit('message', message);
             });
         });
     }

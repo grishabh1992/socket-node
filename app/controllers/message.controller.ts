@@ -2,19 +2,22 @@ import { NextFunction, Response, Request } from "express";
 import { CumtomResponse } from "../config/response";
 import { MessageRepository } from "../repositories/message.repository";
 import { ConversationRepository } from "../repositories/conversation.repository";
+import { MongooseUtil } from "../utils/mongoose.util";
 
 export class MessageController {
     messageRepository: MessageRepository;
-    conversationRepository : ConversationRepository;
+    conversationRepository: ConversationRepository;
+    mongooseUtil: MongooseUtil;
     constructor() {
         this.messageRepository = new MessageRepository();
-        this.conversationRepository = new ConversationRepository()
+        this.conversationRepository = new ConversationRepository();
+        this.mongooseUtil = new MongooseUtil();
     }
 
     getRecord = async (request: Request, response: Response, next: NextFunction) => {
         try {
             const aggregatePipeline = [
-                { $match: request.params.conversationId ? { conversation: request.params.conversationId } : {} },
+                { $match: request.params.conversationId ? { conversation: this.mongooseUtil.objectId(request.params.conversationId) } : {} },
                 { $group: { _id: "$conversation", messages: { $push: "$$ROOT" } } },
                 {
                     $lookup: {
@@ -36,7 +39,7 @@ export class MessageController {
                 { $project: { conversation: 0, "messages.members": 0, "messages.conversation": 0 } }
             ];
             let conversationMessages = await this.messageRepository.aggregate(aggregatePipeline);
-            if(conversationMessages  && Array.isArray(conversationMessages)){
+            if (conversationMessages && !conversationMessages.length) {
                 const condition = {};
                 if (request.params.conversationId) {
                     condition["_id"] = request.params.conversationId;
