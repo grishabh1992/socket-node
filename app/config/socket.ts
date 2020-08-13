@@ -22,8 +22,9 @@ export class Socket {
         SocketConf.io.use((socket, next) => {
             console.log(socket.handshake.query, 'socket.handshake.query');
             if (socket.handshake.query) {
-                let token = this.auth.authenticate(socket.handshake.query.token);
-                if (token) {
+                let user = this.auth.authenticate(socket.handshake.query.token);
+                if (user) {
+                    socket.handshake.query.loggedUser = user;
                     next();
                 } else {
                     next(new Error('Authentication error'));
@@ -44,6 +45,10 @@ export class Socket {
             socket.on('message', async (messageObject : MessageModel) => {
                 const message = await this.messageRepository.create(messageObject);
                 io.to(messageObject.conversation!).emit('message', message);
+            });
+
+            socket.on('typing', async (conversation : string) => {
+                io.to(conversation!).emit('typing',  socket.handshake.query.loggedUser);
             });
         });
     }
