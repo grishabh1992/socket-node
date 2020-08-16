@@ -6,8 +6,7 @@ export class AuthUtil {
     generateToken(info): string {
         return jwt.sign(
             { ...info },
-            AppConfiguration.SECRET,
-            { expiresIn: 60 *60 }
+            AppConfiguration.SECRET          
         );
     }
 
@@ -19,7 +18,6 @@ export class AuthUtil {
             return jwt.verify(token, AppConfiguration.SECRET);
         }
         catch (err) {
-            console.log(err, 'authi')
             if (err && (err.name == 'TokenExpiredError')) {
                 throw CumtomResponse.unAuthorised('Token is expired');
             } else if (err) {
