@@ -23,8 +23,8 @@ export class RepositoryBase<T extends mongoose.Document> {
         this._model.findOne(condition, projection, option || {}, callback)
     }
 
-    update(condition: { [key: string]: any }, item: T, option: { [key: string]: any }, callback: (error: any, result: any) => void) {
-        this._model.updateMany(condition, { $set: item }, option || {}, callback);
+    async update(condition: { [key: string]: any }, item: T, option: { [key: string]: any }) {
+        return await this._model.updateMany(condition, { $set: item }, option || {});
     }
 
     async updateWithoutSet(condition: { [key: string]: any }, item: { [key: string]: any }, option: { [key: string]: any }) {

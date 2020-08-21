@@ -21,7 +21,7 @@ class ConversationSchema {
             members: [{
                 type: Mongoose.Schema.Types.ObjectId,
                 ref: 'Users'
-            }]
+            }],
         });
         return schema;
     }

@@ -25,7 +25,11 @@ class MessageSchema {
             sender: {
                 type: Mongoose.Schema.Types.ObjectId,
                 ref: 'Users'
-            }
+            },
+            seen: [{
+                type: Mongoose.Schema.Types.ObjectId,
+                ref: 'Users'
+            }],
         });
         return schema;
     }
