@@ -15,6 +15,9 @@ class UserSchema {
             profile: {
                 type: String
             },
+            sockets: [{
+                type: String
+            }]
         });
         return schema;
     }

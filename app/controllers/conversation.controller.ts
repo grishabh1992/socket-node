@@ -45,7 +45,29 @@ export class ConversationController {
                     }
                 },
                 { $project: { seenObject: { $arrayElemAt: ["$messageUnread", 0] }, "members": 1, "createdAt": 1, "isGroup": 1, groupName: 1 } },
-                { $project: { unreadCount: "$seenObject.count", "members": 1, "createdAt": 1, "isGroup": 1, groupName: 1 } },
+                {
+                    $lookup: {
+                        from: "messages",
+                        let: {
+                            conversation_id: "$_id"
+                        },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            { $eq: ["$$conversation_id", "$conversation"] },
+                                        ]
+                                    }
+                                }
+                            },
+                            { $sort: { _id: -1 } },
+                            { $limit: 1 }
+
+                        ],
+                        as: "lastMessages"
+                    }
+                },
                 {
                     $lookup: {
                         from: "users",
@@ -54,6 +76,8 @@ export class ConversationController {
                         as: "members"
                     }
                 },
+                { $project: { lastMessage: { $arrayElemAt: ["$lastMessages", 0] }, unreadCount: "$seenObject.count", "members": 1, "createdAt": 1, "isGroup": 1, groupName: 1 } },
+
             ]);
             console.log(conversations);
             response.send(CumtomResponse.success(conversations, 'Conversations fetched'));
