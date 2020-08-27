@@ -37,26 +37,23 @@ export class Socket {
                 next(new Error('Authentication error'));
             }
         })
-        SocketConf.io.on('connect', socket => {
+        SocketConf.io.on('connect', async (socket) => {
             console.log('Client Connectted');
             socket.join(socket.handshake.query.loggedUser._id);
+            await this.userRepository.updateWithoutSet(
+                {
+                    "_id": { "$eq": socket.handshake.query.loggedUser._id },
+                }, { "$addToSet": { sockets: socket.id } }, {}
+            );
+
             socket.on('join', async (room) => {
                 socket.join(room.roomName);
-                io.to(room.roomName).emit('New User Connected...');
-                await this.userRepository.updateWithoutSet(
-                    {
-                        "_id": { "$eq": socket.handshake.query.loggedUser._id },
-                    }, { "$addToSet": { sockets: socket.id } }, {}
-                );
+                io.to(room.roomName).emit();
             });
 
             socket.on('message', async (messageObject: MessageModel) => {
                 const message = await this.messageRepository.create(messageObject);
                 io.to(messageObject.conversation!).emit('message', message);
-                // if (io.sockets.adapter.rooms[conversation]) {
-                //     console.log(io.sockets.adapter.rooms[conversation].length, 'no of client in room===========');
-                // }
-                console.log(messageObject, 'messageObject');
                 messageObject.members.filter(user => user._id !== messageObject.sender).forEach(user => {
                     if (io.sockets.adapter.rooms[user._id] && io.sockets.adapter.rooms[user._id].length) {
                         io.to(user._id).emit('unseen-message', message);
@@ -78,17 +75,13 @@ export class Socket {
                 );
             });
             socket.on('disconnect', async () => {
-                console.log('disconnected event');
+                console.log('Disconnected socket');
                 await this.userRepository.updateWithoutSet(
                     {
                         "_id": { "$eq": socket.handshake.query.loggedUser._id },
                     }, { "$pull": { sockets: socket.id } }, { multi: true }
                 );
-                //socket.manager.onClientDisconnect(socket.id); --> endless loop with this disconnect event on server side
-                //socket.disconnect(); --> same here
             });
         });
-        // Added Disconnection FUnction of socket
-        // Remove client from all joined roomes once socket is disconnected
     }
 }
