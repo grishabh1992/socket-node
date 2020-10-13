@@ -19,8 +19,8 @@ export class RepositoryBase<T extends mongoose.Document> {
         return await this._model.find(condition, projection, option).exec();
     }
 
-    findOne(condition: { [key: string]: any }, projection: { [key: string]: any }, option: { [key: string]: any }, callback: (error: any, result: any) => void) {
-        this._model.findOne(condition, projection, option || {}, callback)
+    async findOne(condition: { [key: string]: any }, projection: { [key: string]: any } = {}, option: { [key: string]: any } = {}) {
+        return await this._model.findOne(condition, projection, option || {})
     }
 
     async update(condition: { [key: string]: any }, item: T, option: { [key: string]: any }) {

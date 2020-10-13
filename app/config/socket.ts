@@ -2,6 +2,9 @@ import { AuthUtil } from "../utils/auth.util";
 import { MessageRepository } from "../repositories/message.repository";
 import { MessageModel } from "../models/message.model";
 import { UserRepository } from "../repositories/user.repository";
+import { ConversationModel } from "../models/conversation.model";
+import { ConversationRepository } from "../repositories/conversation.repository";
+import { UserModel } from "../models/user.model";
 
 const io = require('socket.io')();
 export const SocketConf: any = {};
@@ -9,10 +12,12 @@ export class Socket {
     private auth: AuthUtil;
     private messageRepository: MessageRepository;
     private userRepository: UserRepository;
+    private conversationRepository: ConversationRepository;
     constructor() {
         this.auth = new AuthUtil();
         this.messageRepository = new MessageRepository();
         this.userRepository = new UserRepository();
+        this.conversationRepository = new ConversationRepository();
     }
     init(server) {
         SocketConf.io = io.listen(server, {
@@ -74,8 +79,45 @@ export class Socket {
                     }, { "$addToSet": { seen: socket.handshake.query.loggedUser._id } }, { multi: true }
                 );
             });
+
+            socket.on('initiate-video', async (videoInfo) => {
+                if (videoInfo && videoInfo.receipent) {
+                    const user: UserModel = await this.userRepository.findOne({ _id: videoInfo.receipent._id })
+                    console.log(videoInfo, '=================>>>>>>>>>>>>>>>initiate-video', user.sockets);
+                    socket.join(`${videoInfo.conversation._id}`);
+                    (user.sockets || []).forEach(socketId => {
+                        io.to(socketId).emit("made-request", {
+                            offer: videoInfo.offer,
+                            socket: socket.id,
+                            conversation: videoInfo.conversation
+                        });
+                    });
+                }
+            });
+
+            socket.on('reinitiate-video', async (videoInfo) => {
+                console.log(videoInfo, '================>>>>>>>>>>>>>>>reinitiate-video',);
+                // socket.join(`${videoInfo.conversation._id}`);
+                io.to(videoInfo.socket).emit("made-request", {
+                    offer: videoInfo.offer,
+                    socket: socket.id,
+                    conversation: videoInfo.conversation
+                });
+            });
+
+            socket.on('call-video-accept', async (videoInfo) => {
+                console.log(videoInfo, '=========>>>>>>>>>>>>>>>call-video-accept',);
+                socket.join(`${videoInfo.conversation._id}`);
+                io.to(videoInfo.socket).emit("call-video-accepted", {
+                    answer: videoInfo.answer,
+                    socket: socket.id,
+                    conversation: videoInfo.conversation
+                });
+            });
+
             socket.on('disconnect', async () => {
                 console.log('Disconnected socket');
+                // TODO need to leave room on logout                
                 await this.userRepository.updateWithoutSet(
                     {
                         "_id": { "$eq": socket.handshake.query.loggedUser._id },
