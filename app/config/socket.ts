@@ -2,6 +2,7 @@ import { AuthUtil } from "../utils/auth.util";
 import { MessageRepository } from "../repositories/message.repository";
 import { MessageModel } from "../models/message.model";
 import { UserRepository } from "../repositories/user.repository";
+import { UserModel } from "../models/user.model";
 
 const io = require('socket.io')();
 export const SocketConf: any = {};
@@ -54,7 +55,7 @@ export class Socket {
             socket.on('message', async (messageObject: MessageModel) => {
                 const message = await this.messageRepository.create(messageObject);
                 io.to(messageObject.conversation!).emit('message', message);
-                messageObject.members.filter(user => user._id !== messageObject.sender).forEach(user => {
+                ((messageObject.members as Array<UserModel>).filter(user => user._id !== messageObject.sender)).forEach(user => {
                     if (io.sockets.adapter.rooms[user._id] && io.sockets.adapter.rooms[user._id].length) {
                         io.to(user._id).emit('unseen-message', message);
                     }
