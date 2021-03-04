@@ -17,7 +17,11 @@ export class Socket {
     }
     init(server) {
         SocketConf.io = io.listen(server, {
-            log: true
+            log: true,
+            cors: {
+                origin: "*",
+                methods: ["GET", "POST"]
+            }
         });
         this.setupEvent();
     }
