@@ -90,7 +90,13 @@ export class ConversationController {
         try {
             let conversationBody = request.body;
             conversationBody.members.push(request['user']._id);
-            const conversation = await this.conversationRepository.create(request.body);
+            const conversationAray = await this.conversationRepository.retrieve({ members: { "$all": conversationBody.members } });
+            let conversation;
+            if (conversationAray.length) {
+                conversation = conversationAray[0];
+            } else {
+                conversation = await this.conversationRepository.create(request.body);
+            }
             response.send(CumtomResponse.success(conversation, 'Conversation created'));
         } catch (error) {
             throw CumtomResponse.serverError(error, 'Error');
