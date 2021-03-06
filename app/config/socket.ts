@@ -41,7 +41,8 @@ export class Socket {
             else {
                 next(new Error('Authentication error'));
             }
-        })
+        });
+
         SocketConf.io.on('connect', async (socket) => {
             console.log('Client Connectted');
             socket.join(socket.handshake.query.loggedUser._id);
@@ -60,9 +61,9 @@ export class Socket {
                 const message = await this.messageRepository.create(messageObject);
                 io.to(messageObject.conversation!).emit('message', message);
                 ((messageObject.members as Array<UserModel>).filter(user => user._id !== messageObject.sender)).forEach(user => {
-                    if (io.sockets.adapter.rooms[user._id] && io.sockets.adapter.rooms[user._id].length) {
-                        io.to(user._id).emit('unseen-message', message);
-                    }
+                    // if (io.sockets.adapter.rooms[user._id] && io.sockets.adapter.rooms[user._id].length) {
+                    io.to(user._id).emit('new-message-trigger', message);
+                    // }
                 });
             });
 
@@ -78,7 +79,9 @@ export class Socket {
                         "createdAt": { $lte: new Date(date).toISOString() }
                     }, { "$addToSet": { seen: socket.handshake.query.loggedUser._id } }, { multi: true }
                 );
+                io.to(conversation!).emit('seen-trigger', socket.handshake.query.loggedUser._id);
             });
+
             socket.on('disconnect', async () => {
                 console.log('Disconnected socket');
                 await this.userRepository.updateWithoutSet(
