@@ -1,5 +1,5 @@
 # Specify base image
-FROM node:alpine
+FROM node:14
 
 WORKDIR /usr/app
 
@@ -11,7 +11,7 @@ RUN npm install
 COPY ./ .
 
 #Expose port and start application
-EXPOSE 8080
+EXPOSE 8001
 
 # Run command
 CMD ["npm", "run", "prod"]

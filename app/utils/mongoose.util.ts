@@ -1,7 +1,7 @@
-import mongoose = require("mongoose");
+import { Types } from 'mongoose';
 
 export class MongooseUtil {
-    objectId(id : string): mongoose.Schema.Types.ObjectId {
-        return mongoose.Types.ObjectId(id);
+    objectId(id: string): Types.ObjectId {
+        return Types.ObjectId(id);
     }
 }

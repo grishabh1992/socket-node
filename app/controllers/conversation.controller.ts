@@ -61,7 +61,7 @@ export class ConversationController {
                                     }
                                 }
                             },
-                            { $sort: { _id: -1 } },
+                            { $sort: { _id: 1 } },
                             { $limit: 1 }
 
                         ],
@@ -79,7 +79,6 @@ export class ConversationController {
                 { $project: { lastMessage: { $arrayElemAt: ["$lastMessages", 0] }, unreadCount: "$seenObject.count", "members": 1, "createdAt": 1, "isGroup": 1, groupName: 1 } },
 
             ]);
-            console.log(conversations);
             response.send(CumtomResponse.success(conversations, 'Conversations fetched'));
         } catch (error) {
             throw CumtomResponse.serverError(error, 'Error');

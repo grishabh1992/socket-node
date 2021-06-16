@@ -1,6 +1,6 @@
 import * as express from 'express';
 import { ClusterConfig } from './cluster';
-const port = 3001;
+const port = 8001;
 const app: express.Application = require('./app/app');
 import { Socket } from './app/config/socket';
 
